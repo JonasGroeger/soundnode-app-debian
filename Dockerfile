@@ -30,7 +30,5 @@ RUN npm install --global grunt-cli webpack
 RUN npm install --legacy-bundling
 RUN grunt build
 
-VOLUME dist:/root/dist
-
 WORKDIR /root
 RUN ./build-deb
