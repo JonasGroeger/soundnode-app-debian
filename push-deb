@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+# This script pushes debian package files to the soundcloud package repository.
+#
+# Example: $ make deb
+#          $ cd fpm
+#          $ ./push-deb soundnode_0.6.4-1_amd64.deb
+#          $ ./push-deb soundnode_0.6.4-1_i386.deb
+
+if [ "$#" != 1 ]; then
+    echo "Usage: ./push-deb DEB_FILE"
+    exit 3
+fi
+
+package_cloud version >/dev/null 2>&1 || { echo "I require package_cloud but it's not installed. To install run 'sudo gem install package_cloud'."; exit 3; }
+
+REPOSITORY="JonasGroeger/soundnode"
+DEB_FILE="$2"
+
+if [ ! -f "$DEB_FILE" ]; then
+    echo "$DEB_FILE is not a file! Please provide a valid file!"
+    exit 6
+fi
+
+if file "$DEB_FILE" | grep -qv "Debian binary package"; then
+    echo "$DEB_FILE is not a valid debian package!"
+    exit 7
+fi
+
+##########
+# Ubuntu #
+##########
+package_cloud push "$REPOSITORY/ubuntu/trusty"  "$DEB_FILE" # 14.04 LTS
+package_cloud push "$REPOSITORY/ubuntu/xenial"  "$DEB_FILE" # 16.04 LTS
+package_cloud push "$REPOSITORY/ubuntu/yakkety" "$DEB_FILE" # 16.10
+
+##########
+# Debian #
+##########
+package_cloud push "$REPOSITORY/debian/jessie" "$DEB_FILE" # 8
+
+################
+# ElementaryOS #
+################
+package_cloud push "$REPOSITORY/elementaryos/jupiter" "$DEB_FILE" # 0.1
+package_cloud push "$REPOSITORY/elementaryos/luna"    "$DEB_FILE" # 0.2
+package_cloud push "$REPOSITORY/elementaryos/freya"   "$DEB_FILE" # 0.3
+
+##############
+# Linux Mint #
+##############
+package_cloud push "$REPOSITORY/linuxmint/qiana"   "$DEB_FILE" # 17
+package_cloud push "$REPOSITORY/linuxmint/rebecca" "$DEB_FILE" # 17.1
+package_cloud push "$REPOSITORY/linuxmint/rafaela" "$DEB_FILE" # 17.2
+package_cloud push "$REPOSITORY/linuxmint/rosa"    "$DEB_FILE" # 17.3
+package_cloud push "$REPOSITORY/linuxmint/sarah"   "$DEB_FILE" # 18

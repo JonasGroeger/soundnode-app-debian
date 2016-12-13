@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+VERSION=$(jq --raw-output '.version' src/app/package.json)
+declare -a DISTS=("linux64" "linux32")
+
+for DIST in "${DISTS[@]}"; do
+
+    # We want to build 32 and 64 bit packages
+    if [ "$DIST" = "linux64" ]; then
+        ARCH="amd64"
+    elif [ "$DIST" = "linux32" ]; then
+        ARCH="i386"
+    else
+        echo "No such ARCH for distribution '$DIST'."
+        exit 1
+    fi
+
+    DIST_DIR="src/dist/Soundnode/$DIST"
+
+    # Create package icon
+    convert -resize 48 src/app/soundnode.png packaging-files/soundnode-48x48.png
+
+    fpm -t deb \
+        -s dir \
+        --name "soundnode" \
+        --architecture "$ARCH" \
+        --license "GPL-3" \
+        --maintainer "Jonas Gröger <jonas@huntun.de>" \
+        --vendor "http://www.soundnodeapp.com/" \
+        --url "http://www.soundnodeapp.com/" \
+        --version "$VERSION" \
+        --depends "libgconf-2-4" \
+        --depends "libglib2.0-0" \
+        --depends "libnss3" \
+        --depends "libfontconfig1" \
+        --depends "libpangocairo-1.0-0" \
+        --depends "libxi6" \
+        --depends "libxcomposite1" \
+        --depends "libasound2" \
+        --depends "libxdamage1" \
+        --depends "libxtst6" \
+        --depends "libxrandr2" \
+        --depends "libgtk2.0-0" \
+        --depends "libnotify4" \
+        --category "sound" \
+        --iteration "1" \
+        --package "dist/" \
+        --description "Soundnode App is an Open-Source project to support Soundcloud for desktop Mac, Windows, and Linux." \
+        --after-install "packaging-files/create-symlink" \
+        --after-remove "packaging-files/remove-symlink" \
+        --deb-no-default-config-files \
+        "$DIST_DIR/.=/usr/share/soundnode/" \
+        "packaging-files/soundnode-48x48.png=/usr/share/icons/hicolor/48x48/apps/soundnode.png" \
+        "packaging-files/soundnode.desktop=/usr/share/applications/"
+done
