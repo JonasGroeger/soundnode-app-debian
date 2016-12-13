@@ -1,4 +1,10 @@
-## Customize the test machine
+#######################
+# Additional settings #
+#######################
+#
+# 1. PACKAGECLOUD_TOKEN env var from https://packagecloud.io/docs#circle_ci
+# 2.
+
 machine:
   services:
     - docker
@@ -17,4 +23,5 @@ deployment:
   production:
     branch: master
     commands:
-      - ./push-deb
+      - docker cp $(docker ps -aq --no-trunc | head -n1):/root/dist .
+      - ./push-deb /root/dist/
