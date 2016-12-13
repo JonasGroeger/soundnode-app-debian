@@ -24,4 +24,4 @@ deployment:
     branch: master
     commands:
       - docker cp $(docker ps -aq --no-trunc | head -n1):/root/dist .
-      - ./push-deb /root/dist/
+      - ./push-deb dist/
