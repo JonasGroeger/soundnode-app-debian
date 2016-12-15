@@ -23,7 +23,6 @@ test:
   override:
     - echo "Skip the tests."
   post:
-    - mkdir "$CIRCLE_ARTIFACTS"
     - mv "dist/*.deb" "$CIRCLE_ARTIFACTS/"
 
 deployment:
