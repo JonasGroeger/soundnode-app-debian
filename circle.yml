@@ -18,17 +18,18 @@ dependencies:
     - gem install package_cloud
   override:
     - docker build --rm=false -t soundnode-app-build .
+  post:
+    - docker cp $(docker ps -aq --no-trunc | head -n1):/root/dist .
 
 test:
   override:
     - echo "Skip the tests."
   post:
-    - mv "dist/*.deb" "$CIRCLE_ARTIFACTS/"
+    - mv dist/*.deb "$CIRCLE_ARTIFACTS/"
 
 deployment:
   release:
     tag: /[0-9]+(\.[0-9]+)*/
     owner: JonasGroeger
     commands:
-      - docker cp $(docker ps -aq --no-trunc | head -n1):/root/dist .
-      - ./push-deb dist/
+      - ./push-deb "$CIRCLE_ARTIFACTS"
