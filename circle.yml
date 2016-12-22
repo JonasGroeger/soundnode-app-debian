@@ -11,8 +11,7 @@ machine:
 
 checkout:
   override:
-    - GIT_TAG="$(cat SOUNDNODE_VERSION)"
-    - git clone -b "$GIT_TAG" --single-branch --depth 1 https://github.com/Soundnode/soundnode-app.git src
+    - GIT_TAG="$(cat SOUNDNODE_VERSION)" git clone -b "$GIT_TAG" --single-branch --depth 1 https://github.com/Soundnode/soundnode-app.git src
 
 dependencies:
   override:
