@@ -3,29 +3,32 @@
 #######################
 #
 # 1. PACKAGECLOUD_TOKEN env var from https://packagecloud.io/docs#circle_ci
-# 2.
+# 2. CIRCLE_TAG env var from build trigger
 
 machine:
-  services:
-    - docker
+  node:
+    version: 6.1.0
 
 checkout:
   post:
-    - git clone https://github.com/Soundnode/soundnode-app.git src
+    - git clone -b "$CIRCLE_TAG" --single-branch --depth 1 git@github.com:Soundnode/soundnode-app.git src
 
 dependencies:
-  pre:
-    - gem install package_cloud
   override:
-    - docker build --rm=false -t soundnode-app-build .
+    - apt-get -y --no-install-recommends install bash build-essential curl git imagemagick jq ruby ruby-dev
+    - gem install --no-ri --no-rdoc fpm package_cloud
+    - (cd src; npm install --dev)
+
+compile:
+  override:
+    - (cd src; npm run package:linux)
+    - ./build-deb
   post:
-    - docker cp $(docker ps -aq --no-trunc | head -n1):/root/dist .
+    - mv dist/*.deb "$CIRCLE_ARTIFACTS/"
 
 test:
   override:
     - echo "Skip the tests."
-  post:
-    - mv dist/*.deb "$CIRCLE_ARTIFACTS/"
 
 deployment:
   release:

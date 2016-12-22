@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 
 VERSION=$(jq --raw-output '.version' src/app/package.json)
-declare -a DISTS=("linux64" "linux32")
+declare -a DISTS=("linux-x64")
 
 for DIST in "${DISTS[@]}"; do
 
     # We want to build 32 and 64 bit packages
-    if [ "$DIST" = "linux64" ]; then
+    if [ "$DIST" = "linux-x64" ]; then
         ARCH="amd64"
-    elif [ "$DIST" = "linux32" ]; then
+    elif [ "$DIST" = "linux-x32" ]; then
         ARCH="i386"
     else
         echo "No such ARCH for distribution '$DIST'."
         exit 1
     fi
 
-    DIST_DIR="src/dist/Soundnode/$DIST"
+    DIST_DIR="src/dist/Soundnode/Soundnode-$DIST"
 
     # Create package icon
     convert -resize 48 src/app/soundnode.png packaging-files/soundnode-48x48.png
