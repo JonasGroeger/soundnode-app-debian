@@ -15,7 +15,7 @@ checkout:
 
 dependencies:
   override:
-    - apt-get -y --no-install-recommends install bash build-essential curl git imagemagick jq ruby ruby-dev
+    - sudo apt-get -y --no-install-recommends install bash build-essential curl git imagemagick jq ruby ruby-dev
     - gem install --no-ri --no-rdoc fpm package_cloud
     - (cd src; npm install --dev)
 
