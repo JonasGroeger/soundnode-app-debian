@@ -11,7 +11,7 @@ machine:
 
 checkout:
   post:
-    - git clone -b "$CIRCLE_TAG" --single-branch --depth 1 git@github.com:Soundnode/soundnode-app.git src
+    - git clone -b "$CIRCLE_TAG" --single-branch --depth 1 https://github.com/Soundnode/soundnode-app.git src
 
 dependencies:
   override:
