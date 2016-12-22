@@ -3,7 +3,7 @@
 #######################
 #
 # 1. PACKAGECLOUD_TOKEN env var from https://packagecloud.io/docs#circle_ci
-# 2. CIRC
+# 2. BUILD_VERSION env var from https://github.com/Soundnode/soundnode-app
 
 machine:
   node:
