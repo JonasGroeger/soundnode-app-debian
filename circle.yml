@@ -10,9 +10,8 @@ machine:
     version: 6.1.0
 
 checkout:
-  pre:
+  override:
     - GIT_TAG="$(cat SOUNDNODE_VERSION)"
-  post:
     - git clone -b "$GIT_TAG" --single-branch --depth 1 https://github.com/Soundnode/soundnode-app.git src
 
 dependencies:
