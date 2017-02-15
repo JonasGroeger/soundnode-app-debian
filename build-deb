@@ -12,7 +12,8 @@ require_cmd "fpm --version" "Please install fpm."
 
 if [ -d src ]; then
     echo "+ Cleaning Up"
-    rm -rf src dist/*
+    rm -rf src dist node_modules
+    mkdir src dist
 fi
 
 echo "+ Getting source"
