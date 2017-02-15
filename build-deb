@@ -10,31 +10,34 @@ require_cmd "npm --version" "Please install npm."
 require_cmd "convert -version" "Please install Imagemagick."
 require_cmd "fpm --version" "Please install fpm."
 
-# Cleanup
 if [ -d src ]; then
-    rm -rf src
+    echo "+ Cleaning Up"
+    rm -rf src dist/*
 fi
 
-# Get source
-LATEST_TARBALL=$(curl -s https://api.github.com/repos/Soundnode/soundnode-app/releases/latest | jq --raw-output ".tarball_url")
-mkdir src
+echo "+ Getting source"
+# LATEST_TARBALL=$(curl -s https://api.github.com/repos/Soundnode/soundnode-app/releases/latest | jq --raw-output ".tarball_url")
+LATEST_TARBALL="https://api.github.com/repos/Soundnode/soundnode-app/tarball"
 curl -sL "$LATEST_TARBALL" | pv | tar --strip-components=1 -xz --directory src
 
-VERSION=$(jq --raw-output '.version' src/package.json)
+VERSION="$(jq --raw-output '.version' src/package.json)"
 
 DIST="linux-x64"
 
 # Build
-pushd src
-npm install
-npm run package:linux
-popd
+echo "+ Building"
+pushd src &>/dev/null
+npm install &>/dev/null
+npm run package:linux &>/dev/null
+popd &>/dev/null
 
 DIST_DIR="src/dist/Soundnode/Soundnode-$DIST"
 
 # Create package icon
+echo "+ Creating icon"
 convert -resize 48 src/app/soundnode.png packaging-files/soundnode-48x48.png
 
+echo "+ Packaging .deb"
 fpm -t deb \
     -s dir \
     --name "soundnode" \
@@ -67,3 +70,5 @@ fpm -t deb \
     "$DIST_DIR/.=/usr/share/soundnode/" \
     "packaging-files/soundnode-48x48.png=/usr/share/icons/hicolor/48x48/apps/soundnode.png" \
     "packaging-files/soundnode.desktop=/usr/share/applications/"
+
+echo "+ Done"
