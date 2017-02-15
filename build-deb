@@ -1,55 +1,69 @@
 #!/usr/bin/env bash
 
-VERSION=$(jq --raw-output '.version' src/app/package.json)
-declare -a DISTS=("linux-x64")
+# Dependencies
+function require_cmd { $1 >/dev/null 2>&1 || { echo "$2"; exit 1; } }
+require_cmd "curl --version" "Please install curl."
+require_cmd "pv --version" "Please install pv."
+require_cmd "git --version" "Please install git."
+require_cmd "jq --version" "Please install jq."
+require_cmd "npm --version" "Please install npm."
+require_cmd "convert -version" "Please install Imagemagick."
+require_cmd "fpm --version" "Please install fpm."
 
-for DIST in "${DISTS[@]}"; do
+# Cleanup
+if [ -d src ]; then
+    rm -rf src
+fi
 
-    # We want to build 32 and 64 bit packages
-    if [ "$DIST" = "linux-x64" ]; then
-        ARCH="amd64"
-    elif [ "$DIST" = "linux-x32" ]; then
-        ARCH="i386"
-    else
-        echo "No such ARCH for distribution '$DIST'."
-        exit 1
-    fi
+# Get source
+LATEST_TARBALL=$(curl -s https://api.github.com/repos/Soundnode/soundnode-app/releases/latest | jq --raw-output ".tarball_url")
+mkdir src
+curl -sL "$LATEST_TARBALL" | pv | tar --strip-components=1 -xz --directory src
 
-    DIST_DIR="src/dist/Soundnode/Soundnode-$DIST"
+VERSION=$(jq --raw-output '.version' src/package.json)
 
-    # Create package icon
-    convert -resize 48 src/app/soundnode.png packaging-files/soundnode-48x48.png
+DIST="linux-x64"
 
-    fpm -t deb \
-        -s dir \
-        --name "soundnode" \
-        --architecture "$ARCH" \
-        --license "GPL-3" \
-        --maintainer "Jonas Gröger <jonas@huntun.de>" \
-        --vendor "http://www.soundnodeapp.com/" \
-        --url "http://www.soundnodeapp.com/" \
-        --version "$VERSION" \
-        --depends "libgconf-2-4" \
-        --depends "libglib2.0-0" \
-        --depends "libnss3" \
-        --depends "libfontconfig1" \
-        --depends "libpangocairo-1.0-0" \
-        --depends "libxi6" \
-        --depends "libxcomposite1" \
-        --depends "libasound2" \
-        --depends "libxdamage1" \
-        --depends "libxtst6" \
-        --depends "libxrandr2" \
-        --depends "libgtk2.0-0" \
-        --depends "libnotify4" \
-        --category "sound" \
-        --iteration "1" \
-        --package "dist/" \
-        --description "Soundnode App is an Open-Source project to support Soundcloud for desktop Mac, Windows, and Linux." \
-        --after-install "packaging-files/create-symlink" \
-        --after-remove "packaging-files/remove-symlink" \
-        --deb-no-default-config-files \
-        "$DIST_DIR/.=/usr/share/soundnode/" \
-        "packaging-files/soundnode-48x48.png=/usr/share/icons/hicolor/48x48/apps/soundnode.png" \
-        "packaging-files/soundnode.desktop=/usr/share/applications/"
-done
+# Build
+pushd src
+npm install
+npm run package:linux
+popd
+
+DIST_DIR="src/dist/Soundnode/Soundnode-$DIST"
+
+# Create package icon
+convert -resize 48 src/app/soundnode.png packaging-files/soundnode-48x48.png
+
+fpm -t deb \
+    -s dir \
+    --name "soundnode" \
+    --architecture "$ARCH" \
+    --license "GPL-3" \
+    --maintainer "Jonas Gröger <jonas@huntun.de>" \
+    --vendor "http://www.soundnodeapp.com/" \
+    --url "http://www.soundnodeapp.com/" \
+    --version "$VERSION" \
+    --depends "libgconf-2-4" \
+    --depends "libglib2.0-0" \
+    --depends "libnss3" \
+    --depends "libfontconfig1" \
+    --depends "libpangocairo-1.0-0" \
+    --depends "libxi6" \
+    --depends "libxcomposite1" \
+    --depends "libasound2" \
+    --depends "libxdamage1" \
+    --depends "libxtst6" \
+    --depends "libxrandr2" \
+    --depends "libgtk2.0-0" \
+    --depends "libnotify4" \
+    --category "sound" \
+    --iteration "1" \
+    --package "dist/" \
+    --description "Soundnode App is an Open-Source project to support Soundcloud for desktop Mac, Windows, and Linux." \
+    --after-install "packaging-files/create-symlink" \
+    --after-remove "packaging-files/remove-symlink" \
+    --deb-no-default-config-files \
+    "$DIST_DIR/.=/usr/share/soundnode/" \
+    "packaging-files/soundnode-48x48.png=/usr/share/icons/hicolor/48x48/apps/soundnode.png" \
+    "packaging-files/soundnode.desktop=/usr/share/applications/"
